@@ -1,7 +1,5 @@
 package com.example.travelmantics;
 
-import android.app.Activity;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -21,34 +19,34 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FirebaseUtil {
-    public static FirebaseDatabase mFirebaseDatabase;
-    public static DatabaseReference mDatabaseReference;
-    public static FirebaseStorage mStorage;
-    public static StorageReference mStrorageRef;
+class FirebaseUtil {
+    static FirebaseDatabase mFirebaseDatabase;
+    static DatabaseReference mDatabaseReference;
     private static FirebaseUtil firebaseUtil;
-    public static FirebaseAuth mFirebaseAuth;
-    public static FirebaseAuth.AuthStateListener mAuthStateListener;
+    private static FirebaseAuth mFirebaseAuth;
+    static FirebaseStorage mStorage;
+    static StorageReference mStrorageRef;
+    private static FirebaseAuth.AuthStateListener mAuthStateListener;
     public static ArrayList<TravelDeal> mDeals;
     private static final int RC_SIGN_IN = 123;
     private static ListActivity caller;
     public static boolean isAdmin;
 
-    //    private constructor for the class not to get instantiated outside this class
-    private FirebaseUtil(){}
+    // private constructor for the class not to get instantiated outside this class
+    private FirebaseUtil() {
+    }
 
-    public static void openFbReference(String ref, final ListActivity callerActivity){
-        if(firebaseUtil == null){
+    static void openFbReference(String ref, final ListActivity callerActivity) {
+        if (firebaseUtil == null) {
             firebaseUtil = new FirebaseUtil();
             mFirebaseDatabase = FirebaseDatabase.getInstance();
             mFirebaseAuth = FirebaseAuth.getInstance();
             caller = callerActivity;
 
-
             mAuthStateListener = new FirebaseAuth.AuthStateListener() {
                 @Override
                 public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                    if(firebaseAuth.getCurrentUser() == null) {
+                    if (firebaseAuth.getCurrentUser() == null) {
                         FirebaseUtil.signIn();
                     } else {
                         String userId = firebaseAuth.getUid();
@@ -60,30 +58,24 @@ public class FirebaseUtil {
             connectStorage();
         }
 
-        mDeals = new ArrayList<TravelDeal>();
+        mDeals = new ArrayList<>();
         mDatabaseReference = mFirebaseDatabase.getReference().child(ref);
     }
 
-    private static void signIn(){
+    private static void signIn() {
         // Choose authentication providers
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.EmailBuilder().build(),
+        List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.EmailBuilder().build(),
                 new AuthUI.IdpConfig.GoogleBuilder().build());
 
-
-// Create and launch sign-in intent
+        // Create and launch sign-in intent
         caller.startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build(),
-                RC_SIGN_IN);
+                AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), RC_SIGN_IN);
     }
 
-    private static void checkAdmin(String uid){
+    private static void checkAdmin(String uid) {
         FirebaseUtil.isAdmin = false;
         DatabaseReference ref = mFirebaseDatabase.getReference().child("administrators").child(uid);
-        ChildEventListener listener =   new ChildEventListener() {
+        ChildEventListener listener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 FirebaseUtil.isAdmin = true;
@@ -113,16 +105,16 @@ public class FirebaseUtil {
         ref.addChildEventListener(listener);
     }
 
-    public static void attachListener(){
+    static void attachListener() {
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
     }
 
-    public static void detachListener(){
+    static void detachListener() {
         mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
     }
 
-    public static void connectStorage(){
+    private static void connectStorage() {
         mStorage = FirebaseStorage.getInstance();
-        mStrorageRef =mStorage.getReference().child("deals_pictures");
+        mStrorageRef = mStorage.getReference().child("deals_pictures");
     }
 }
